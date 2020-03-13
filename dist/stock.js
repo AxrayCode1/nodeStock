@@ -11,6 +11,8 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
+
 var _proxy = _interopRequireDefault(require("./tools/proxy.js"));
 
 var _tools = _interopRequireDefault(require("./tools/tools.js"));
@@ -22,7 +24,12 @@ var _fs = _interopRequireDefault(require("fs"));
 // import date from 'date-and-time';
 var _require = require('worker_threads'),
     Worker = _require.Worker,
-    workerData = _require.workerData;
+    workerData = _require.workerData; // import {Iconv} from 'iconv';
+
+
+var Iconv = require('iconv').Iconv;
+
+var Buffer = require('buffer/').Buffer;
 
 var proxys;
 var stocks;
@@ -41,39 +48,68 @@ var getAllProxy = function getAllProxy() {
   return _proxy["default"].parseProxy(pathProxy);
 };
 
-var catchStock = function catchStock(data) {
+var removeQueue = function removeQueue(id) {
+  var pos = queueWorks.map(function (e) {
+    return e.id;
+  }).indexOf(id);
+  queueWorks.splice(pos, 1);
+};
+
+var catchGoodInfoStock = function catchGoodInfoStock(data) {
   catchProp = data;
   queueWorks = [];
   if (catchProp.isCompany) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
   maxGetCount = stocks.length;
   runIndex = 0;
+  insertQueue();
   watchQueue();
 };
 
-var insertQueue = function insertQueue() {
-  var insertCount = queueMax - queueWorks.length;
+var insertCatchMonth = function insertCatchMonth() {
+  var date = new Date();
+  var year = date.getFullYear();
+  var month = date.getMonth();
+  var day = date.getDate();
 
-  for (var i = 0; i < insertCount; i++) {
-    if (runIndex !== maxGetCount) {
-      queueWorks.push({
-        id: stocks[runIndex],
-        inWork: false
-      });
-      console.log('Run Index:', runIndex);
-      runIndex++;
+  if (catchProp.year === year) {
+    if (day < 12) {
+      (0, _readOnlyError2["default"])("month"), --month;
     }
   }
+
+  console.log('Month', month);
+
+  for (var i = 0; i < month; i++) {
+    var rightMonth = i + 1;
+    queueWorks.push({
+      id: rightMonth,
+      inWork: false
+    });
+  }
+};
+
+var catchMopsStock = function catchMopsStock(data) {
+  catchProp = data;
+  queueWorks = [];
+  insertCatchMonth();
+  catchProp.year = catchProp.year - 1911;
+  maxGetCount = queueWorks.length;
+  runIndex = 0; // console.log('queue',queueWorks);
+
+  watchQueue(true);
 };
 
 var watchQueue = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-    var filterWorks;
+    var isMops,
+        filterWorks,
+        _args = arguments;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
+            isMops = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
             runIndex = 0;
-            insertQueue();
 
           case 2:
             if (!true) {
@@ -86,11 +122,11 @@ var watchQueue = /*#__PURE__*/function () {
             });
             filterWorks.forEach(function (filterWork) {
               filterWork.inWork = true;
-              createCatchThread(filterWork.id);
+              createCatchThread(filterWork.id, isMops);
             });
             console.log('Queue Length', queueWorks.length);
 
-            if (!(runIndex !== maxGetCount && queueWorks.length < queueMax)) {
+            if (!(!isMops && runIndex !== maxGetCount && queueWorks.length < queueMax)) {
               _context.next = 9;
               break;
             }
@@ -100,7 +136,7 @@ var watchQueue = /*#__PURE__*/function () {
             return _context.abrupt("continue", 2);
 
           case 9:
-            if (!(runIndex === maxGetCount && queueWorks.length === 0)) {
+            if (!(runIndex === maxGetCount && queueWorks.length === 0 || isMops && queueWorks.length == 0)) {
               _context.next = 13;
               break;
             }
@@ -130,64 +166,97 @@ var watchQueue = /*#__PURE__*/function () {
   };
 }();
 
-var createCatchThread = function createCatchThread(id) {
-  // console.log(catchProp);
-  // url: 'https://get-site-ip.com/',  
-  var stockProp = _stockConfig["default"].getStockProp(catchProp.type, catchProp.isCompany);
+var insertQueue = function insertQueue() {
+  var insertCount = queueMax - queueWorks.length;
 
-  var url = stockProp.url;
-
-  if (!proxys) {
-    proxys = getAllProxy();
-  }
-
-  var proxy;
-
-  for (var i = 0; i < 10; i++) {
-    if (!proxy) {
-      proxy = getOneProxy();
+  for (var i = 0; i < insertCount; i++) {
+    if (runIndex !== maxGetCount) {
+      queueWorks.push({
+        id: stocks[runIndex],
+        inWork: false
+      });
+      console.log('Run Index:', runIndex);
+      runIndex++;
     }
   }
+};
 
-  _tools["default"].createDir("".concat(stockProp.path, "/").concat(id));
-
-  var data = {
-    url: url,
-    id: id,
-    proxy: proxy,
-    writePath: "".concat(stockProp.path, "/").concat(id, "/").concat(catchProp.type, "_").concat(id, ".html")
-  };
+var createCatchThread = function createCatchThread(id, isMops) {
+  var data = creatWorkData(id, isMops);
 
   if (_fs["default"].existsSync(data.writePath)) {
     console.log('File Exist Escape ', id);
     removeQueue(id);
   } else {
+    console.log(data);
     var worker1 = new Worker(__dirname + '/httpRequest.js', {
       workerData: data
     });
     console.log('New Thread:', id);
-    waitThreadCallback(worker1, id);
+    waitThreadCallback(worker1, id, isMops);
   }
 };
 
-var waitThreadCallback = function waitThreadCallback(runningWorker, id) {
+var creatWorkData = function creatWorkData(id, isMops) {
+  var stockProp = {};
+  var writePathTemp = '';
+
+  if (isMops) {
+    catchProp.month = id;
+    stockProp = _stockConfig["default"].getMopsStockProp(catchProp);
+    writePathTemp = "".concat(stockProp.path, "/").concat(catchProp.year, "_").concat(catchProp.month, ".html");
+  } else {
+    stockProp = _stockConfig["default"].getStockProp(catchProp.type, catchProp.isCompany);
+
+    _tools["default"].createDir("".concat(stockProp.path, "/").concat(id));
+
+    writePathTemp = "".concat(stockProp.path, "/").concat(id, "/").concat(catchProp.type, "_").concat(id, ".html");
+  }
+
+  var proxy = undefined;
+
+  if (!isMops) {
+    if (!proxys) {
+      proxys = getAllProxy();
+    }
+
+    for (var i = 0; i < 10; i++) {
+      if (!proxy) {
+        proxy = getOneProxy();
+      }
+    }
+  }
+
+  var url = stockProp.url;
+  var data = {
+    url: url,
+    id: id,
+    proxy: proxy,
+    writePath: writePathTemp,
+    isMops: isMops
+  };
+  return data;
+};
+
+var waitThreadCallback = function waitThreadCallback(runningWorker, id, isMops) {
   runningWorker.on('error', function (error) {
     console.log(error); // removeQueue(id);
 
-    createCatchThread(id);
+    createCatchThread(id, isMops);
   });
   runningWorker.on('exit', function (code) {
     if (queueWorks.filter(function (e) {
       return e === id;
     }).length > 0) {
       // removeQueue(id);
-      createCatchThread(id);
+      createCatchThread(id, isMops);
     }
   });
   runningWorker.on('message', function (message) {
     if (message.result) {
       console.log('Success', message.id);
       console.log(message.writePath);
+      console.log(message.body); // console.log(Buffer.from(message.body));            
 
       _fs["default"].writeFile(message.writePath, message.body, function () {
         console.log('Write Done ', message.id);
@@ -196,19 +265,12 @@ var waitThreadCallback = function waitThreadCallback(runningWorker, id) {
       removeQueue(id);
     } else {
       console.log('Retry', id);
-      createCatchThread(id);
+      createCatchThread(id, isMops);
     }
   });
-};
+}; // const setProxyProp = (proxy) => {
+// }
 
-var removeQueue = function removeQueue(id) {
-  var pos = queueWorks.map(function (e) {
-    return e.id;
-  }).indexOf(id);
-  queueWorks.splice(pos, 1);
-};
-
-var setProxyProp = function setProxyProp(proxy) {};
 
 var getOneProxy = function getOneProxy() {
   var randomIndex;
@@ -251,7 +313,8 @@ var getStocksNumberArr = function getStocksNumberArr(path) {
 };
 
 var _default = {
-  catchStock: catchStock
+  catchGoodInfoStock: catchGoodInfoStock,
+  catchMopsStock: catchMopsStock
 }; // const timeoutID = new setInterval(()=>{
 //     runQueue();
 //     const queueLength = queueWorks.length;

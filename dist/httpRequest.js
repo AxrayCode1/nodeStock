@@ -6,9 +6,7 @@ var _httpsProxyAgent = _interopRequireDefault(require("https-proxy-agent"));
 
 var _requestPromise = _interopRequireDefault(require("request-promise"));
 
-var _https = _interopRequireDefault(require("https"));
-
-var _fs = _interopRequireDefault(require("fs"));
+var _iconv = _interopRequireDefault(require("iconv"));
 
 // import request from 'request';
 // import url from 'url';
@@ -17,31 +15,7 @@ var _require = require('worker_threads'),
     workerData = _require.workerData;
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-var httpuseragents = ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246", "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1", "Mozilla/5.0 (Linux; Android 7.0; Pixel C Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36", "Mozilla/5.0 (Linux; Android 6.0.1; SGP771 Build/32.2.A.0.253; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36", "Mozilla/5.0 (Linux; Android 6.0.1; SHIELD Tablet K1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Safari/537.36"]; // const sendHttpRequestSync = (data,callback) => {    
-//     const httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
-//     const opts = {
-//         uri: data.url,
-//         timeout: 5000,
-//         followRedirect: true,
-//         maxRedirects: 10,
-//         headers: {
-//             'User-Agent':httpUseraAgent
-//         }
-//     }   
-//     if(data.proxy){
-//         const proxyOpts = url.parse(data.proxy.url);
-//         const agent = new HttpsProxyAgent(proxyOpts);
-//         opts.agent = agent;
-//     }
-//     request(opts, (error, response) => {
-//         const responseData = {
-//             data : data,
-//             error : error,
-//             response : response
-//         }
-//         callback(responseData);              
-//     })    
-// }
+var httpuseragents = ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246", "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1", "Mozilla/5.0 (Linux; Android 7.0; Pixel C Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36", "Mozilla/5.0 (Linux; Android 6.0.1; SGP771 Build/32.2.A.0.253; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36", "Mozilla/5.0 (Linux; Android 6.0.1; SHIELD Tablet K1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Safari/537.36"];
 
 var sendHttpRequest = function sendHttpRequest(data) {
   // return new Promise((resolve) => {   
@@ -52,6 +26,7 @@ var sendHttpRequest = function sendHttpRequest(data) {
     followRedirect: true,
     maxRedirects: 10,
     resolveWithFullResponse: true,
+    encoding: null,
     headers: {
       'User-Agent': httpUseraAgent
     }
@@ -71,6 +46,14 @@ var sendHttpRequest = function sendHttpRequest(data) {
       data.result = false;
 
       if (repos.statusCode == 200) {
+        if (data.isMops) {
+          var iconv = new _iconv["default"].Iconv('Big5', 'UTF8');
+          var buffer = iconv.convert(repos.body);
+          message.body = buffer.toString('utf-8');
+        } else {
+          message.body = body.toString('utf-8');
+        }
+
         data.body = repos.body;
         data.result = true;
       }
@@ -80,9 +63,6 @@ var sendHttpRequest = function sendHttpRequest(data) {
       if (!_done) {
         _done = true;
         data.result = false;
-
-        _fs["default"].writeFileSync(data.id);
-
         parentPort.postMessage(data);
       }
     });
@@ -133,3 +113,28 @@ sendHttpRequest(cloneData); // export default {sendHttpRequestSync,sendHttpReque
 //     console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
 //     console.log('body:', body); // Print the HTML for the Google homepage.
 // })
+// const sendHttpRequestSync = (data,callback) => {    
+//     const httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
+//     const opts = {
+//         uri: data.url,
+//         timeout: 5000,
+//         followRedirect: true,
+//         maxRedirects: 10,
+//         headers: {
+//             'User-Agent':httpUseraAgent
+//         }
+//     }   
+//     if(data.proxy){
+//         const proxyOpts = url.parse(data.proxy.url);
+//         const agent = new HttpsProxyAgent(proxyOpts);
+//         opts.agent = agent;
+//     }
+//     request(opts, (error, response) => {
+//         const responseData = {
+//             data : data,
+//             error : error,
+//             response : response
+//         }
+//         callback(responseData);              
+//     })    
+// }

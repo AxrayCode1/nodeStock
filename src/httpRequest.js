@@ -3,8 +3,7 @@
 import HttpsProxyAgent from 'https-proxy-agent';
 import rp from 'request-promise';
 const { parentPort, workerData } = require('worker_threads');
-import https from 'https';
-import fs from 'fs';
+import Iconv from 'iconv';
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
@@ -19,33 +18,6 @@ const httpuseragents=[
     "Mozilla/5.0 (Linux; Android 6.0.1; SHIELD Tablet K1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Safari/537.36"
 ]
 
-// const sendHttpRequestSync = (data,callback) => {    
-//     const httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
-//     const opts = {
-//         uri: data.url,
-//         timeout: 5000,
-//         followRedirect: true,
-//         maxRedirects: 10,
-//         headers: {
-//             'User-Agent':httpUseraAgent
-//         }
-//     }   
-//     if(data.proxy){
-//         const proxyOpts = url.parse(data.proxy.url);
-//         const agent = new HttpsProxyAgent(proxyOpts);
-//         opts.agent = agent;
-//     }
-
-//     request(opts, (error, response) => {
-//         const responseData = {
-//             data : data,
-//             error : error,
-//             response : response
-//         }
-//         callback(responseData);              
-//     })    
-// }
-
 const sendHttpRequest = (data) => { 
     // return new Promise((resolve) => {   
     const httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
@@ -55,6 +27,7 @@ const sendHttpRequest = (data) => {
         followRedirect: true,
         maxRedirects: 10,
         resolveWithFullResponse: true,
+        encoding: null,
         headers: {
             'User-Agent':httpUseraAgent
         }
@@ -70,8 +43,15 @@ const sendHttpRequest = (data) => {
             console.log(repos.statusCode);
             // console.log(repos.body);
             data.result = false;
-            if(repos.statusCode == 200){
-                data.body = repos.body;
+            if(repos.statusCode == 200){                       
+                if(data.isMops){                
+                    const iconv = new Iconv.Iconv('Big5', 'UTF8');
+                    const buffer = iconv.convert(repos.body);
+                    message.body = buffer.toString('utf-8');                                  
+                }else{
+                    message.body = body.toString('utf-8');
+                }                  
+                data.body = repos.body;                
                 data.result = true;            
             }
             parentPort.postMessage(data);
@@ -134,3 +114,31 @@ sendHttpRequest(cloneData);
 //     console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
 //     console.log('body:', body); // Print the HTML for the Google homepage.
 // })
+
+
+// const sendHttpRequestSync = (data,callback) => {    
+//     const httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
+//     const opts = {
+//         uri: data.url,
+//         timeout: 5000,
+//         followRedirect: true,
+//         maxRedirects: 10,
+//         headers: {
+//             'User-Agent':httpUseraAgent
+//         }
+//     }   
+//     if(data.proxy){
+//         const proxyOpts = url.parse(data.proxy.url);
+//         const agent = new HttpsProxyAgent(proxyOpts);
+//         opts.agent = agent;
+//     }
+
+//     request(opts, (error, response) => {
+//         const responseData = {
+//             data : data,
+//             error : error,
+//             response : response
+//         }
+//         callback(responseData);              
+//     })    
+// }
