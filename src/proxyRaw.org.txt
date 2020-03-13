@@ -1,0 +1,100 @@
+103.106.238.230	50941	BD	Bangladesh	elite proxy	no	yes	1 minute ago
+124.41.240.171	42190	NP	Nepal	elite proxy	no	yes	1 minute ago
+204.15.243.234	40860	US	United States	elite proxy	no	yes	1 minute ago
+70.35.213.229	36127	CA	Canada	elite proxy	no	yes	1 minute ago
+212.33.239.50	61309	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+36.89.190.57	54461	ID	Indonesia	elite proxy	no	yes	1 minute ago
+138.219.147.197	53281	BR	Brazil	elite proxy	no	yes	1 minute ago
+118.173.233.39	48988	TH	Thailand	elite proxy	no	yes	1 minute ago
+94.228.85.129	38510	SK	Slovakia	elite proxy	no	yes	1 minute ago
+190.109.167.9	57608	CO	Colombia	elite proxy	no	yes	1 minute ago
+124.41.211.251	36205	NP	Nepal	elite proxy	no	yes	1 minute ago
+91.203.36.102	53313	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+45.177.47.2	3128	BR	Brazil	elite proxy	no	yes	1 minute ago
+181.40.84.38	49674	PY	Paraguay	elite proxy	no	yes	1 minute ago
+79.78.184.12	56834	GB	United Kingdom	elite proxy	no	yes	1 minute ago
+36.89.229.13	33389	ID	Indonesia	elite proxy	no	yes	1 minute ago
+82.200.9.234	47284	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+202.166.205.78	58431	NP	Nepal	elite proxy	no	yes	1 minute ago
+82.117.244.85	31280	UA	Ukraine	elite proxy	no	yes	1 minute ago
+103.106.114.134	8080	ID	Indonesia	elite proxy	no	yes	1 minute ago
+178.75.21.109	36143	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+95.181.37.114	39876	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+62.4.60.50	53281	ME	Montenegro	elite proxy	no	yes	1 minute ago
+95.165.244.46	8080	RU	Russian Federation	anonymous	no	yes	1 minute ago
+103.65.194.2	35782	IN	India	elite proxy	no	yes	1 minute ago
+181.57.198.102	46960	CO	Colombia	anonymous	no	yes	1 minute ago
+89.19.199.152	53281	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+103.250.157.34	44611	IN	India	elite proxy	no	yes	1 minute ago
+103.83.99.69	3128	ID	Indonesia	anonymous	no	yes	1 minute ago
+61.9.82.34	56994	PH	Philippines	elite proxy	no	yes	1 minute ago
+178.57.89.142	37131	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+95.158.6.243	46399	UA	Ukraine	elite proxy	no	yes	1 minute ago
+103.215.177.180	80	ID	Indonesia	anonymous	no	yes	1 minute ago
+170.81.35.26	36681	CR	Costa Rica	elite proxy	no	yes	1 minute ago
+114.6.87.177	60811	ID	Indonesia	elite proxy	no	yes	1 minute ago
+1.20.99.218	36117	TH	Thailand	elite proxy	no	yes	1 minute ago
+118.174.220.152	31701	TH	Thailand	elite proxy	no	yes	1 minute ago
+118.174.46.144	45330	TH	Thailand	anonymous	no	yes	1 minute ago
+92.247.93.142	50170	BG	Bulgaria	elite proxy	no	yes	1 minute ago
+93.76.211.56	50743	UA	Ukraine	elite proxy	no	yes	1 minute ago
+185.204.208.78	8080	FR	France	elite proxy	no	yes	1 minute ago
+140.227.211.126	3128	JP	Japan	elite proxy	no	yes	1 minute ago
+36.89.192.119	34879	ID	Indonesia	elite proxy	no	yes	1 minute ago
+27.255.13.134	48636	PK	Pakistan	elite proxy	no	yes	1 minute ago
+91.207.147.243	38472	UA	Ukraine	elite proxy	no	yes	1 minute ago
+193.59.27.71	36748	PL	Poland	elite proxy	no	yes	1 minute ago
+103.216.82.198	6666	IN	India	anonymous	no	yes	1 minute ago
+1.10.188.203	45476	TH	Thailand	elite proxy	no	yes	1 minute ago
+95.181.131.199	47673	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+117.242.147.73	46827	IN	India	anonymous	no	yes	1 minute ago
+5.141.86.107	55528	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+103.76.201.30	23500	ID	Indonesia	elite proxy	no	yes	1 minute ago
+78.29.42.10	4550	RU	Russian Federation	anonymous	no	yes	1 minute ago
+31.192.131.248	53281	RU	Russian Federation	elite proxy	no	yes	1 minute ago
+91.82.42.2	43881	HU	Hungary	elite proxy	no	yes	3 minutes ago
+118.173.232.5	34413	TH	Thailand	elite proxy	no	yes	3 minutes ago
+81.89.113.142	36412	RU	Russian Federation	elite proxy	no	yes	3 minutes ago
+110.44.133.135	3128	JP	Japan	anonymous	no	yes	3 minutes ago
+212.200.27.134	8080	RS	Serbia	elite proxy	no	yes	3 minutes ago
+190.166.249.44	38403	DO	Dominican Republic	elite proxy	no	yes	3 minutes ago
+81.95.131.10	44292	RU	Russian Federation	elite proxy	no	yes	3 minutes ago
+144.91.116.171	443	DE	Germany	anonymous	no	yes	10 minutes ago
+125.25.165.106	43730	TH	Thailand	elite proxy	no	yes	10 minutes ago
+113.53.91.12	53281	TH	Thailand	anonymous	no	yes	10 minutes ago
+51.38.71.101	8080	GB	United Kingdom	elite proxy	no	yes	10 minutes ago
+45.4.237.72	48546	BR	Brazil	elite proxy	no	yes	10 minutes ago
+176.113.126.127	39921	RU	Russian Federation	elite proxy	no	yes	10 minutes ago
+93.179.209.216	57520	PL	Poland	elite proxy	no	yes	10 minutes ago
+85.234.126.107	55555	RU	Russian Federation	elite proxy	no	yes	10 minutes ago
+187.17.145.237	30279	BR	Brazil	elite proxy	no	yes	10 minutes ago
+178.63.246.85	8118	DE	Germany	elite proxy	no	yes	10 minutes ago
+203.128.79.18	43227	ID	Indonesia	elite proxy	no	yes	10 minutes ago
+116.212.129.58	52659	KH	Cambodia	elite proxy	no	yes	10 minutes ago
+91.219.56.221	8080	RU	Russian Federation	elite proxy	no	yes	10 minutes ago
+91.206.148.243	55119	RU	Russian Federation	elite proxy	no	yes	10 minutes ago
+103.78.213.226	45075	ID	Indonesia	elite proxy	no	yes	10 minutes ago
+41.160.40.2	37741	ZA	South Africa	elite proxy	no	yes	10 minutes ago
+182.23.81.82	3128	ID	Indonesia	elite proxy	no	yes	10 minutes ago
+91.214.128.243	23500	UA	Ukraine	elite proxy	no	yes	12 minutes ago
+89.39.108.202	37681	PL	Poland	elite proxy	no	yes	12 minutes ago
+212.227.11.130	80	DE	Germany	anonymous	no	yes	12 minutes ago
+176.221.104.2	35215	PL	Poland	elite proxy	no	yes	12 minutes ago
+103.75.34.121	59015	IN	India	elite proxy	no	yes	12 minutes ago
+117.58.241.164	52636	BD	Bangladesh	elite proxy	no	yes	12 minutes ago
+83.13.164.202	49185	PL	Poland	elite proxy	no	yes	12 minutes ago
+159.224.44.19	37190	UA	Ukraine	elite proxy	no	yes	12 minutes ago
+177.46.148.142	3128	BR	Brazil	anonymous	no	yes	12 minutes ago
+138.121.32.26	23500	BR	Brazil	elite proxy	no	yes	12 minutes ago
+179.49.24.102	3128	EC	Ecuador	anonymous	no	yes	12 minutes ago
+109.121.207.165	48834	BG	Bulgaria	elite proxy	no	yes	12 minutes ago
+93.185.96.61	43749	CZ	Czech Republic	elite proxy	no	yes	12 minutes ago
+3.125.122.212	8080	DE	Germany	anonymous	no	yes	12 minutes ago
+85.238.167.170	42397	AT	Austria	elite proxy	no	yes	12 minutes ago
+103.220.207.242	54349	BD	Bangladesh	elite proxy	no	yes	12 minutes ago
+190.152.71.30	58727	EC	Ecuador	elite proxy	no	yes	20 minutes ago
+38.143.68.105	3128	US	United States	elite proxy	no	yes	20 minutes ago
+176.120.209.192	41258	RU	Russian Federation	elite proxy	no	yes	20 minutes ago
+125.166.231.112	8080	ID	Indonesia	elite proxy	no	yes	20 minutes ago
+123.200.20.242	58847	BD	Bangladesh	elite proxy	no	yes	20 minutes ago
+87.247.19.126	53353	KZ	Kazakhstan	elite proxy	no	yes	20 minutes ago
