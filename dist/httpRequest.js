@@ -6,19 +6,18 @@ var _httpsProxyAgent = _interopRequireDefault(require("https-proxy-agent"));
 
 var _requestPromise = _interopRequireDefault(require("request-promise"));
 
-var _iconv = _interopRequireDefault(require("iconv"));
-
 // import request from 'request';
 // import url from 'url';
 var _require = require('worker_threads'),
     parentPort = _require.parentPort,
     workerData = _require.workerData;
 
+var iconv = require('iconv-lite');
+
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 var httpuseragents = ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246", "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1", "Mozilla/5.0 (Linux; Android 7.0; Pixel C Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36", "Mozilla/5.0 (Linux; Android 6.0.1; SGP771 Build/32.2.A.0.253; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36", "Mozilla/5.0 (Linux; Android 6.0.1; SHIELD Tablet K1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Safari/537.36"];
 
-var sendHttpRequest = function sendHttpRequest(data) {
-  // return new Promise((resolve) => {   
+var getOpts = function getOpts(data) {
   var httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
   var opts = {
     uri: data.url,
@@ -37,21 +36,25 @@ var sendHttpRequest = function sendHttpRequest(data) {
     opts.agent = agent;
   }
 
+  return opts;
+};
+
+var sendHttpRequest = function sendHttpRequest(data) {
+  // return new Promise((resolve) => {       
+  var opts = getOpts(data);
+
   try {
     var _done = false;
     var send = (0, _requestPromise["default"])(opts).then(function (repos) {
-      _done = true;
-      console.log(repos.statusCode); // console.log(repos.body);
+      _done = true; // console.log(repos.statusCode);
+      // console.log(repos.body);
 
       data.result = false;
 
       if (repos.statusCode == 200) {
         if (data.isMops) {
-          var iconv = new _iconv["default"].Iconv('Big5', 'UTF8');
-          var buffer = iconv.convert(repos.body);
-          message.body = buffer.toString('utf-8');
-        } else {
-          message.body = body.toString('utf-8');
+          // if(data.type == 'salemonth')             
+          repos.body = iconv.encode(iconv.decode(repos.body, 'big5'), 'utf-8').toString();
         }
 
         data.body = repos.body;
@@ -84,11 +87,58 @@ var sendHttpRequest = function sendHttpRequest(data) {
   }
 };
 
-var data = workerData;
-var cloneData = Object.assign({}, data); // console.log(data);
-// parentPort.postMessage(data);
+var sendHttpPostRequest = function sendHttpPostRequest(data) {
+  var opts = getOpts(data);
+  opts.form = data.form; // console.log(opts);
 
-sendHttpRequest(cloneData); // export default {sendHttpRequestSync,sendHttpRequest};
+  try {
+    var _done2 = false;
+
+    var send = _requestPromise["default"].post(opts).then(function (repos) {
+      _done2 = true; // console.log(repos.statusCode);
+      // console.log(repos.body);
+
+      data.result = false;
+
+      if (repos.statusCode == 200) {
+        data.body = repos.body;
+        data.result = true;
+      }
+
+      parentPort.postMessage(data);
+    })["catch"](function (err) {
+      if (!_done2) {
+        _done2 = true;
+        data.result = false;
+        parentPort.postMessage(data);
+      }
+    });
+
+    setTimeout(function () {
+      if (!_done2) {
+        _done2 = true;
+        data.result = false;
+        parentPort.postMessage(data);
+        console.log('cancel:', data.id);
+        send.cancel();
+      }
+    }, 60000);
+  } catch (error) {
+    if (!done) {
+      done = true;
+      data.result = false;
+      parentPort.postMessage(data);
+    }
+  }
+};
+
+var data = workerData;
+var cloneData = Object.assign({}, data); // console.log(data.type);
+
+if (data.isMops && data.type === 'performance') {
+  // console.log('Send Post');
+  sendHttpPostRequest(cloneData);
+} else sendHttpRequest(cloneData); // export default {sendHttpRequestSync,sendHttpRequest};
 // const proxy = 'http://115.87.111.231:8213';
 // // const opts = {
 // //     host:'115.87.111.231',

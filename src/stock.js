@@ -13,10 +13,11 @@ let stocks;
 let queueWorks;
 let runIndex;
 
-const queueMax = 10;
+const queueMax = 5;
 const reUseProxyMax = 8;
-const sleepTime = 5000;
+const sleepTime = 6000;
 let maxGetCount = 10;
+let isAllStockID = true;
 
 let catchProp = {};
 
@@ -31,19 +32,6 @@ const getAllProxy = () => {
 const removeQueue = (id) => {
     const pos = queueWorks.map(function(e) { return e.id; }).indexOf(id);
     queueWorks.splice(pos,1);    
-}
-
-const catchGoodInfoStock = (data) => {     
-    catchProp = data;       
-    queueWorks = [];
-    if(catchProp.isCompany)
-        stocks = getStocksNumberArr(pathStock);
-    else
-        stocks = getStocksNumberArr(pathStockNoCompany);        
-    maxGetCount = stocks.length;
-    runIndex = 0;
-    insertQueue();
-    watchQueue();    
 }
 
 const insertCatchMonth = ()=>{
@@ -63,32 +51,58 @@ const insertCatchMonth = ()=>{
     }
 }
 
+const catchGoodInfoStock = (data) => {     
+    catchProp = data;       
+    queueWorks = [];
+    if(catchProp.isCompany)
+        stocks = getStocksNumberArr(pathStock);
+    else
+        stocks = getStocksNumberArr(pathStockNoCompany);        
+    maxGetCount = stocks.length;
+    runIndex = 0;
+    insertQueue();
+    watchQueue();    
+}
+
 const catchMopsStock = (data) => {     
     catchProp = data;       
-    queueWorks = [];      
-    insertCatchMonth();  
-    catchProp.year = catchProp.year - 1911;
-    maxGetCount = queueWorks.length;
+    queueWorks = [];            
     runIndex = 0;
-    // console.log('queue',queueWorks);
+    catchProp.year = catchProp.year - 1911;
+    switch(catchProp.type){
+        case 'salemonth':            
+            isAllStockID = false;
+            insertCatchMonth();  
+            maxGetCount = queueWorks.length;
+            break;
+        case 'performance':
+            if(catchProp.isCompany)
+                stocks = getStocksNumberArr(pathStock);
+            else
+                stocks = getStocksNumberArr(pathStockNoCompany);        
+            maxGetCount = stocks.length;
+            insertQueue();            
+            break;
+    }   
+        
     watchQueue(true);    
 }
 
-const watchQueue = async(isMops=false) =>{
-    runIndex = 0;    
+const watchQueue = async() =>{
+    // runIndex = 0;    
     while(true){
         const filterWorks = queueWorks.filter((work)=>work.inWork === false);
         filterWorks.forEach(filterWork=>{
             filterWork.inWork = true;                        
-            createCatchThread(filterWork.id,isMops);
+            createCatchThread(filterWork.id);
         });
         console.log('Queue Length',queueWorks.length);
-        if(!isMops && runIndex !== maxGetCount && queueWorks.length < queueMax){
+        if(isAllStockID && runIndex !== maxGetCount && queueWorks.length < queueMax){
             // console.log('insert queue');        
             insertQueue();
             continue;
         }
-        if((runIndex === maxGetCount && queueWorks.length === 0) || (isMops && queueWorks.length == 0)){
+        if((runIndex === maxGetCount && queueWorks.length === 0) || (catchProp.isMops && queueWorks.length == 0)){
             console.log('All Done!');  
             process.exit();          
             break;
@@ -109,36 +123,47 @@ const insertQueue = ()=>{
 }
 
 
-const createCatchThread = (id,isMops) => {    
-    const data = creatWorkData(id,isMops);
-
+const createCatchThread = (id) => {    
+    const data = creatWorkData(id);
+    // console.log(data);
     if(fs.existsSync(data.writePath)){
         console.log('File Exist Escape ',id);
         removeQueue(id);
     }else{
-        console.log(data);
+        // console.log(data);
         const worker1 = new Worker(__dirname +'/httpRequest.js',{
             workerData: data
         });    
         console.log('New Thread:',id);
-        waitThreadCallback(worker1,id,isMops);
+        waitThreadCallback(worker1,id);
     }    
 }
 
-const creatWorkData = (id,isMops)=>{
+const creatWorkData = (id)=>{
     let stockProp = {};
     let writePathTemp = '';
-    if(isMops){
-        catchProp.month = id;
-        stockProp = stockConfig.getMopsStockProp(catchProp);        
-        writePathTemp = `${stockProp.path}/${catchProp.year}_${catchProp.month}.html`;
+    if(catchProp.isMops){
+        switch(catchProp.type){
+            case 'salemonth':
+                catchProp.month = id;
+                stockProp = stockConfig.getMopsStockProp(catchProp);        
+                writePathTemp = `${stockProp.path}/${catchProp.year}_${catchProp.month}.html`;
+                break;
+            case 'performance':
+                catchProp.id = id;
+                stockProp = stockConfig.getMopsStockProp(catchProp);    
+                tools.createDir(`${stockProp.path}/${id}`);      
+                writePathTemp = `${stockProp.path}/${id}/${catchProp.year}_${catchProp.season}.html`;
+                break;                
+        }
     }else{
-        stockProp = stockConfig.getStockProp(catchProp.type,catchProp.isCompany);
+        catchProp.id = id;
+        stockProp = stockConfig.getStockProp(catchProp);
         tools.createDir(`${stockProp.path}/${id}`);  
         writePathTemp = `${stockProp.path}/${id}/${catchProp.type}_${id}.html`;
     }
     let proxy = undefined;
-    if(!isMops){
+    // if(!catchProp.isMops){
         if(!proxys){        
             proxys = getAllProxy();
         }          
@@ -147,49 +172,53 @@ const creatWorkData = (id,isMops)=>{
                 proxy = getOneProxy();    
             }
         }
-    }
+    // }
 
-    const url = stockProp.url;
+    // const url = stockProp.url;
                          
-    const data = {
-        url: url, 
-        id: id,
+    const data = {        
         proxy:proxy,
         writePath:writePathTemp,
-        isMops:isMops        
+        ...catchProp,
+        ...stockProp        
     };
 
     return data;
 }
 
-const waitThreadCallback = (runningWorker,id,isMops) => {    
+const waitThreadCallback = (runningWorker,id) => {    
     runningWorker.on('error', (error) => {
         console.log(error);
         // removeQueue(id);
-        createCatchThread(id,isMops);
+        createCatchThread(id);
     });
 
     runningWorker.on('exit', (code) => {                      
         if(queueWorks.filter((e)=>e===id).length > 0){
             // removeQueue(id);
-            createCatchThread(id,isMops);
+            createCatchThread(id);
         }
     });
 
     runningWorker.on('message', (message) => {        
         if(message.result){
             console.log('Success', message.id);     
-            console.log(message.writePath);
+            // console.log(message.writePath);
             
-            console.log(message.body);
-            // console.log(Buffer.from(message.body));            
-            fs.writeFile(message.writePath,message.body,()=>{
-                console.log('Write Done ',message.id);
-            });       
-            removeQueue(id);    
+            // console.log(message.body);
+            // console.log(Buffer.from(message.body));     
+            if(message.body.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')){
+                console.log('Retry Get',id);
+                createCatchThread(id);
+            }else{
+                fs.writeFile(message.writePath,message.body,()=>{
+                    console.log('Write Done ',message.id);
+                });       
+                removeQueue(id);    
+            }                        
         }else{
             console.log('Retry', id);            
-            createCatchThread(id,isMops);
+            createCatchThread(id);
         }               
     });
 }

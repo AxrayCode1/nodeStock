@@ -7,6 +7,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
+
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
@@ -20,6 +22,10 @@ var _tools = _interopRequireDefault(require("./tools/tools.js"));
 var _stockConfig = _interopRequireDefault(require("./config/stockConfig.js"));
 
 var _fs = _interopRequireDefault(require("fs"));
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 // import date from 'date-and-time';
 var _require = require('worker_threads'),
@@ -35,10 +41,11 @@ var proxys;
 var stocks;
 var queueWorks;
 var runIndex;
-var queueMax = 10;
+var queueMax = 5;
 var reUseProxyMax = 8;
-var sleepTime = 5000;
+var sleepTime = 6000;
 var maxGetCount = 10;
+var isAllStockID = true;
 var catchProp = {};
 var pathProxy = '/opt/lampp/node/nodeProject/stock/src/proxyRaw.txt';
 var pathStockNoCompany = '/opt/lampp/node/nodeProject/stock/src/stockNoCompany.txt';
@@ -53,16 +60,6 @@ var removeQueue = function removeQueue(id) {
     return e.id;
   }).indexOf(id);
   queueWorks.splice(pos, 1);
-};
-
-var catchGoodInfoStock = function catchGoodInfoStock(data) {
-  catchProp = data;
-  queueWorks = [];
-  if (catchProp.isCompany) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
-  maxGetCount = stocks.length;
-  runIndex = 0;
-  insertQueue();
-  watchQueue();
 };
 
 var insertCatchMonth = function insertCatchMonth() {
@@ -88,32 +85,48 @@ var insertCatchMonth = function insertCatchMonth() {
   }
 };
 
+var catchGoodInfoStock = function catchGoodInfoStock(data) {
+  catchProp = data;
+  queueWorks = [];
+  if (catchProp.isCompany) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
+  maxGetCount = stocks.length;
+  runIndex = 0;
+  insertQueue();
+  watchQueue();
+};
+
 var catchMopsStock = function catchMopsStock(data) {
   catchProp = data;
   queueWorks = [];
-  insertCatchMonth();
+  runIndex = 0;
   catchProp.year = catchProp.year - 1911;
-  maxGetCount = queueWorks.length;
-  runIndex = 0; // console.log('queue',queueWorks);
+
+  switch (catchProp.type) {
+    case 'salemonth':
+      isAllStockID = false;
+      insertCatchMonth();
+      maxGetCount = queueWorks.length;
+      break;
+
+    case 'performance':
+      if (catchProp.isCompany) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
+      maxGetCount = stocks.length;
+      insertQueue();
+      break;
+  }
 
   watchQueue(true);
 };
 
 var watchQueue = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-    var isMops,
-        filterWorks,
-        _args = arguments;
+    var filterWorks;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            isMops = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
-            runIndex = 0;
-
-          case 2:
             if (!true) {
-              _context.next = 17;
+              _context.next = 15;
               break;
             }
 
@@ -122,38 +135,38 @@ var watchQueue = /*#__PURE__*/function () {
             });
             filterWorks.forEach(function (filterWork) {
               filterWork.inWork = true;
-              createCatchThread(filterWork.id, isMops);
+              createCatchThread(filterWork.id);
             });
             console.log('Queue Length', queueWorks.length);
 
-            if (!(!isMops && runIndex !== maxGetCount && queueWorks.length < queueMax)) {
-              _context.next = 9;
+            if (!(isAllStockID && runIndex !== maxGetCount && queueWorks.length < queueMax)) {
+              _context.next = 7;
               break;
             }
 
             // console.log('insert queue');        
             insertQueue();
-            return _context.abrupt("continue", 2);
+            return _context.abrupt("continue", 0);
 
-          case 9:
-            if (!(runIndex === maxGetCount && queueWorks.length === 0 || isMops && queueWorks.length == 0)) {
-              _context.next = 13;
+          case 7:
+            if (!(runIndex === maxGetCount && queueWorks.length === 0 || catchProp.isMops && queueWorks.length == 0)) {
+              _context.next = 11;
               break;
             }
 
             console.log('All Done!');
             process.exit();
-            return _context.abrupt("break", 17);
+            return _context.abrupt("break", 15);
 
-          case 13:
-            _context.next = 15;
+          case 11:
+            _context.next = 13;
             return _tools["default"].sleep(sleepTime);
 
-          case 15:
-            _context.next = 2;
+          case 13:
+            _context.next = 0;
             break;
 
-          case 17:
+          case 15:
           case "end":
             return _context.stop();
         }
@@ -181,91 +194,107 @@ var insertQueue = function insertQueue() {
   }
 };
 
-var createCatchThread = function createCatchThread(id, isMops) {
-  var data = creatWorkData(id, isMops);
+var createCatchThread = function createCatchThread(id) {
+  var data = creatWorkData(id); // console.log(data);
 
   if (_fs["default"].existsSync(data.writePath)) {
     console.log('File Exist Escape ', id);
     removeQueue(id);
   } else {
-    console.log(data);
+    // console.log(data);
     var worker1 = new Worker(__dirname + '/httpRequest.js', {
       workerData: data
     });
     console.log('New Thread:', id);
-    waitThreadCallback(worker1, id, isMops);
+    waitThreadCallback(worker1, id);
   }
 };
 
-var creatWorkData = function creatWorkData(id, isMops) {
+var creatWorkData = function creatWorkData(id) {
   var stockProp = {};
   var writePathTemp = '';
 
-  if (isMops) {
-    catchProp.month = id;
-    stockProp = _stockConfig["default"].getMopsStockProp(catchProp);
-    writePathTemp = "".concat(stockProp.path, "/").concat(catchProp.year, "_").concat(catchProp.month, ".html");
+  if (catchProp.isMops) {
+    switch (catchProp.type) {
+      case 'salemonth':
+        catchProp.month = id;
+        stockProp = _stockConfig["default"].getMopsStockProp(catchProp);
+        writePathTemp = "".concat(stockProp.path, "/").concat(catchProp.year, "_").concat(catchProp.month, ".html");
+        break;
+
+      case 'performance':
+        catchProp.id = id;
+        stockProp = _stockConfig["default"].getMopsStockProp(catchProp);
+
+        _tools["default"].createDir("".concat(stockProp.path, "/").concat(id));
+
+        writePathTemp = "".concat(stockProp.path, "/").concat(id, "/").concat(catchProp.year, "_").concat(catchProp.season, ".html");
+        break;
+    }
   } else {
-    stockProp = _stockConfig["default"].getStockProp(catchProp.type, catchProp.isCompany);
+    catchProp.id = id;
+    stockProp = _stockConfig["default"].getStockProp(catchProp);
 
     _tools["default"].createDir("".concat(stockProp.path, "/").concat(id));
 
     writePathTemp = "".concat(stockProp.path, "/").concat(id, "/").concat(catchProp.type, "_").concat(id, ".html");
   }
 
-  var proxy = undefined;
+  var proxy = undefined; // if(!catchProp.isMops){
 
-  if (!isMops) {
-    if (!proxys) {
-      proxys = getAllProxy();
-    }
-
-    for (var i = 0; i < 10; i++) {
-      if (!proxy) {
-        proxy = getOneProxy();
-      }
-    }
+  if (!proxys) {
+    proxys = getAllProxy();
   }
 
-  var url = stockProp.url;
-  var data = {
-    url: url,
-    id: id,
+  for (var i = 0; i < 10; i++) {
+    if (!proxy) {
+      proxy = getOneProxy();
+    }
+  } // }
+  // const url = stockProp.url;
+
+
+  var data = _objectSpread({
     proxy: proxy,
-    writePath: writePathTemp,
-    isMops: isMops
-  };
+    writePath: writePathTemp
+  }, catchProp, {}, stockProp);
+
   return data;
 };
 
-var waitThreadCallback = function waitThreadCallback(runningWorker, id, isMops) {
+var waitThreadCallback = function waitThreadCallback(runningWorker, id) {
   runningWorker.on('error', function (error) {
     console.log(error); // removeQueue(id);
 
-    createCatchThread(id, isMops);
+    createCatchThread(id);
   });
   runningWorker.on('exit', function (code) {
     if (queueWorks.filter(function (e) {
       return e === id;
     }).length > 0) {
       // removeQueue(id);
-      createCatchThread(id, isMops);
+      createCatchThread(id);
     }
   });
   runningWorker.on('message', function (message) {
     if (message.result) {
-      console.log('Success', message.id);
-      console.log(message.writePath);
-      console.log(message.body); // console.log(Buffer.from(message.body));            
+      console.log('Success', message.id); // console.log(message.writePath);
+      // console.log(message.body);
+      // console.log(Buffer.from(message.body));     
 
-      _fs["default"].writeFile(message.writePath, message.body, function () {
-        console.log('Write Done ', message.id);
-      });
+      if (message.body.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')) {
+        console.log('Retry Get', id);
+        createCatchThread(id);
+      } else {
+        _fs["default"].writeFile(message.writePath, message.body, function () {
+          console.log('Write Done ', message.id);
+        });
 
-      removeQueue(id);
+        removeQueue(id);
+      }
     } else {
       console.log('Retry', id);
-      createCatchThread(id, isMops);
+      createCatchThread(id);
     }
   });
 }; // const setProxyProp = (proxy) => {

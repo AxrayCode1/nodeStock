@@ -3,7 +3,7 @@
 import HttpsProxyAgent from 'https-proxy-agent';
 import rp from 'request-promise';
 const { parentPort, workerData } = require('worker_threads');
-import Iconv from 'iconv';
+const iconv = require('iconv-lite')
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
@@ -18,8 +18,7 @@ const httpuseragents=[
     "Mozilla/5.0 (Linux; Android 6.0.1; SHIELD Tablet K1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Safari/537.36"
 ]
 
-const sendHttpRequest = (data) => { 
-    // return new Promise((resolve) => {   
+const getOpts = (data) => {
     const httpUseraAgent = httpuseragents[Math.floor(Math.random() * httpuseragents.length)];
     const opts = {
         uri: data.url,
@@ -36,21 +35,67 @@ const sendHttpRequest = (data) => {
         const agent = new HttpsProxyAgent(data.proxy.url);
         opts.agent = agent;        
     }    
+    return opts;
+}
+
+const sendHttpRequest = (data) => { 
+    // return new Promise((resolve) => {       
+    const opts = getOpts(data);    
     try {
         let done = false;        
         const send = rp(opts).then((repos) => {            
             done =true;
-            console.log(repos.statusCode);
+            // console.log(repos.statusCode);
             // console.log(repos.body);
             data.result = false;
             if(repos.statusCode == 200){                       
-                if(data.isMops){                
-                    const iconv = new Iconv.Iconv('Big5', 'UTF8');
-                    const buffer = iconv.convert(repos.body);
-                    message.body = buffer.toString('utf-8');                                  
-                }else{
-                    message.body = body.toString('utf-8');
-                }                  
+                if(data.isMops){   
+                    // if(data.type == 'salemonth')             
+                    repos.body = iconv.encode(iconv.decode(repos.body, 'big5'),'utf-8').toString();                    
+                }              
+                data.body = repos.body;                
+                data.result = true;            
+            }
+            parentPort.postMessage(data);
+        })
+        .catch((err) => {                         
+            if(!done){
+                done =true;
+                data.result = false;                            
+                parentPort.postMessage(data);              
+            }
+        })         
+        setTimeout(()=>{            
+            if(!done){ 
+                done = true;
+                data.result = false;      
+                parentPort.postMessage(data);  
+                console.log('cancel:',data.id);
+                send.cancel();                      
+            }           
+        },60000)
+    }catch(error){       
+        if(!done){ 
+            done = true; 
+            data.result = false;             
+            parentPort.postMessage(data);
+        }
+    }
+}
+
+const sendHttpPostRequest = (data) => {
+   
+    const opts = getOpts(data);
+    opts.form = data.form;
+    // console.log(opts);
+    try {
+        let done = false;        
+        const send = rp.post(opts).then((repos) => {            
+            done =true;
+            // console.log(repos.statusCode);
+            // console.log(repos.body);
+            data.result = false;
+            if(repos.statusCode == 200){                
                 data.body = repos.body;                
                 data.result = true;            
             }
@@ -83,9 +128,15 @@ const sendHttpRequest = (data) => {
 
 const data = workerData;
 const cloneData = Object.assign({}, data);
-// console.log(data);
-// parentPort.postMessage(data);
-sendHttpRequest(cloneData);
+// console.log(data.type);
+
+if(data.isMops && data.type === 'performance')
+{
+    // console.log('Send Post');
+    sendHttpPostRequest(cloneData);
+}
+else
+    sendHttpRequest(cloneData);
 
 // export default {sendHttpRequestSync,sendHttpRequest};
 

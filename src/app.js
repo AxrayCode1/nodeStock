@@ -29,7 +29,7 @@ yargs.command({
     },
     handler: function (argv) {
         // console.log(argv);
-        stock.catchGoodInfoStock({type:argv.t,isCompany:argv.company});
+        stock.catchGoodInfoStock({isMops:false,...argv});
     }
 })
 
@@ -56,11 +56,17 @@ yargs.command({
             describe: 'Year(Like 2020,2019 ...)',
             demandOption: true,
             type: 'number'
+        },
+        season: {
+            alias: 's',            
+            describe: 'Session',
+            choices:['01','02','03','04'],
+            type: 'string'
         }       
     },
     handler: function (argv) {
-        // console.log(argv);
-        stock.catchMopsStock({type:argv.t,isCompany:argv.company,year:argv.y});
+        // console.log(argv);        
+        stock.catchMopsStock({isMops:true,...argv});
         // stock.catchStock({type:argv.t,isCompany:argv.company});
     }
 })
