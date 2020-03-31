@@ -41,9 +41,9 @@ var proxys;
 var stocks;
 var queueWorks;
 var runIndex;
-var queueMax = 5;
+var queueMax = 10;
 var reUseProxyMax = 8;
-var sleepTime = 6000;
+var sleepTime = 5000;
 var maxGetCount = 10;
 var isAllStockID = true;
 var catchProp = {};
@@ -67,6 +67,7 @@ var insertCatchMonth = function insertCatchMonth() {
   var year = date.getFullYear();
   var month = date.getMonth();
   var day = date.getDate();
+  console.log(day);
 
   if (catchProp.year === year) {
     if (day < 12) {
@@ -76,19 +77,21 @@ var insertCatchMonth = function insertCatchMonth() {
 
   console.log('Month', month);
 
-  for (var i = 0; i < month; i++) {
+  for (var i = 0; i <= month; i++) {
     var rightMonth = i + 1;
     queueWorks.push({
       id: rightMonth,
       inWork: false
     });
   }
+
+  console.log('queueWorks', queueWorks);
 };
 
 var catchGoodInfoStock = function catchGoodInfoStock(data) {
   catchProp = data;
   queueWorks = [];
-  if (catchProp.isCompany) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
+  if (catchProp.company) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
   maxGetCount = stocks.length;
   runIndex = 0;
   insertQueue();
@@ -109,7 +112,8 @@ var catchMopsStock = function catchMopsStock(data) {
       break;
 
     case 'performance':
-      if (catchProp.isCompany) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
+      console.log(catchProp);
+      if (catchProp.company) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
       maxGetCount = stocks.length;
       insertQueue();
       break;
@@ -195,13 +199,13 @@ var insertQueue = function insertQueue() {
 };
 
 var createCatchThread = function createCatchThread(id) {
-  var data = creatWorkData(id); // console.log(data);
+  var data = creatWorkData(id); // console.log(data.writePath); 
 
   if (_fs["default"].existsSync(data.writePath)) {
     console.log('File Exist Escape ', id);
     removeQueue(id);
   } else {
-    // console.log(data);
+    console.log(data);
     var worker1 = new Worker(__dirname + '/httpRequest.js', {
       workerData: data
     });
@@ -240,18 +244,19 @@ var creatWorkData = function creatWorkData(id) {
     writePathTemp = "".concat(stockProp.path, "/").concat(id, "/").concat(catchProp.type, "_").concat(id, ".html");
   }
 
-  var proxy = undefined; // if(!catchProp.isMops){
+  var proxy = undefined;
 
-  if (!proxys) {
-    proxys = getAllProxy();
-  }
-
-  for (var i = 0; i < 10; i++) {
-    if (!proxy) {
-      proxy = getOneProxy();
+  if (!(catchProp.isMops && catchProp.type == 'salemonth')) {
+    if (!proxys) {
+      proxys = getAllProxy();
     }
-  } // }
-  // const url = stockProp.url;
+
+    for (var i = 0; i < 10; i++) {
+      if (!proxy) {
+        proxy = getOneProxy();
+      }
+    }
+  } // const url = stockProp.url;
 
 
   var data = _objectSpread({
@@ -280,9 +285,18 @@ var waitThreadCallback = function waitThreadCallback(runningWorker, id) {
     if (message.result) {
       console.log('Success', message.id); // console.log(message.writePath);
       // console.log(message.body);
-      // console.log(Buffer.from(message.body));     
+      // console.log(Buffer.from(message.body));
+      // if(body.isMops &&)
 
-      if (message.body.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')) {
+      var body = message.body;
+
+      if (Object.prototype.toString.call(message.body) !== '[object String]') {
+        body = new TextDecoder("utf-8").decode(message.body);
+      } // console.log(body);         
+
+
+      if (body.includes('請關閉瀏覽器後重新嘗試')) {
+        console.log(body);
         console.log('Retry Get', id);
         createCatchThread(id);
       } else {

@@ -103,48 +103,52 @@ const getDirectories = source =>
     })
     .map(dirent => dirent.name)
 
-const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformanceNoCompany';
-// const name = '8906';    //For Test
-let notUse = 0;
-getDirectories(path).forEach(name => {        
-    // const files = ['107_01.html','107_02.html']
-    const files = ['107_01.html'];
-    files.forEach(f=>{
-        const file = `${path}/${name}/${f}`;        
-        if(fs.existsSync(file)){
-            const html = fs.readFileSync(file).toString();
-            if(html.includes('公開發行公司不繼續公開發行')){
-                console.log(`==============${name} is not available======================`);
-                notUse++;
-                return;
-            }
-            if(html.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')){
-                console.log(`==============${name} Not Catch======================`);
-                fs.unlinkSync(file);
-                return;
-            }
-            const value = parseMopsPerformanceHtml(html);    
-            if(!value.income && !value.opIncome && !value.extIncome && !value.EPS && !value.perIncome){
-                console.log(`==============${name}======================`);
-                notUse++;        
-                // console.log(notUse);
-                // fs.unlinkSync(file);
-            }else{
-                if(value.income !== undefined && value.opIncome !== undefined && value.extIncome !== undefined && value.EPS !== undefined && value.perIncome !== undefined){
-
-                }else{
+const parseAllMopsStockHtml = () => {
+    // const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformanceNoCompany';
+    const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformance';
+    // const name = '8906';    //For Test
+    let notUse = 0;
+    getDirectories(path).forEach(name => {        
+        // const files = ['107_01.html','107_02.html']
+        const files = ['108_02.html'];
+        files.forEach(f=>{
+            const file = `${path}/${name}/${f}`;        
+            if(fs.existsSync(file)){
+                const html = fs.readFileSync(file).toString();
+                if(html.includes('公開發行公司不繼續公開發行')){
+                    // console.log(`==============${name} is not available======================`);
+                    notUse++;
+                    return;
+                }
+                if(html.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')){
+                    console.log(`==============${name} Not Catch======================`);
+                    fs.unlinkSync(file);
+                    return;
+                }
+                const value = parseMopsPerformanceHtml(html);    
+                if(!value.income && !value.opIncome && !value.extIncome && !value.EPS && !value.perIncome){
                     console.log(`==============${name}======================`);
                     notUse++;        
-                    // console.log(name,value);
+                    // console.log(notUse);
+                    // fs.unlinkSync(file);
+                }else{
+                    if(value.income !== undefined && value.opIncome !== undefined && value.extIncome !== undefined && value.EPS !== undefined && value.perIncome !== undefined){
+
+                    }else{
+                        console.log(`==============${name}======================`);
+                        notUse++;        
+                        console.log(name,value);
+                    }                    
                 }
-                // console.log(name,value);
             }
-        }
-        // else{
-        //     console.log(`==============Not Found:${name}======================`);
-        // }
-    })
-    // console.log(`===========================================`)
-});
-console.log(notUse);
+            else{
+                console.log(`==============Not Found:${name}======================`);
+            }
+        })        
+    });
+    console.log(notUse);
+}
+
+parseAllMopsStockHtml();
+
 // export default{parseGetIPHtml};

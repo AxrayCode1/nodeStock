@@ -46,30 +46,37 @@ var parseMopsPerformanceHtml = function parseMopsPerformanceHtml(rawHtml) {
           // console.log(findValueWithKeyWord('營業收入合計',trdom));
           var income = findValueWithKeyWord('營業收入合計', trdom);
 
-          if (income) {
+          if (income !== undefined) {
             value.income = income;
+            return;
+          }
+
+          var perIncome = findValueWithKeyWord('營業毛利（毛損）', trdom);
+
+          if (perIncome !== undefined) {
+            value.perIncome = perIncome;
             return;
           }
 
           var opIncome = findValueWithKeyWord('營業利益', trdom);
 
-          if (opIncome) {
+          if (opIncome !== undefined) {
             value.opIncome = opIncome;
             return;
           }
 
           var extIncome = findValueWithKeyWord('營業外收入及支出合計', trdom);
 
-          if (extIncome) {
+          if (extIncome !== undefined) {
             value.extIncome = extIncome;
             return;
           }
 
-          var eps = findValueWithKeyWord('基本每股盈餘合計', trdom);
+          var eps = findValueWithKeyWord('基本每股盈餘', trdom);
 
-          if (eps) {
-            value.EPS = eps;
-            return;
+          if (eps !== NaN && eps !== undefined) {
+            // console.log(eps);
+            value.EPS = eps; // return;
           }
         }
       });
@@ -87,7 +94,7 @@ var findValueWithKeyWord = function findValueWithKeyWord(key, trdom) {
     htmlparser2.DomUtils.getElementsByTagName('td', trdom).forEach(function (tddom) {
       if (index === 1) {
         // console.log('index:',parseFloat(htmlparser2.DomUtils.getText(tddom).trim().replace(',','')));
-        value = parseFloat(htmlparser2.DomUtils.getText(tddom).trim().replace(',', '')); // console.log(value);
+        value = parseFloat(htmlparser2.DomUtils.getText(tddom).trim().replace(',', '')); // console.log('value:',value,key);
         // value = value/100000;                                
       }
 
@@ -111,35 +118,51 @@ var getDirectories = function getDirectories(source) {
   });
 };
 
-var path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformanceNoCompany';
-var notFound = 0;
-getDirectories(path).forEach(function (name) {
-  // console.log(`==============${name}======================`)
-  var file = "".concat(path, "/").concat(name, "/107_01.html");
+var parseAllMopsStockHtml = function parseAllMopsStockHtml() {
+  // const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformanceNoCompany';
+  var path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformance'; // const name = '8906';    //For Test
 
-  if (fs.existsSync(file)) {
-    var html = fs.readFileSync(file).toString();
+  var notUse = 0;
+  getDirectories(path).forEach(function (name) {
+    // const files = ['107_01.html','107_02.html']
+    var files = ['108_02.html'];
+    files.forEach(function (f) {
+      var file = "".concat(path, "/").concat(name, "/").concat(f);
 
-    if (html.includes('公開發行公司不繼續公開發行')) {
-      console.log("==============".concat(name, " is not available======================"));
-      return;
-    }
+      if (fs.existsSync(file)) {
+        var html = fs.readFileSync(file).toString();
 
-    if (html.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')) {
-      console.log("==============".concat(name, " Not Catch======================"));
-      fs.unlinkSync(file);
-      return;
-    }
+        if (html.includes('公開發行公司不繼續公開發行')) {
+          // console.log(`==============${name} is not available======================`);
+          notUse++;
+          return;
+        }
 
-    var value = parseMopsPerformanceHtml(html);
+        if (html.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')) {
+          console.log("==============".concat(name, " Not Catch======================"));
+          fs.unlinkSync(file);
+          return;
+        }
 
-    if (!value.income && !value.opIncome && !value.extIncome && !value.EPS) {
-      console.log("==============".concat(name, "======================"));
-      notFound++;
-      console.log(notFound); // fs.unlinkSync(file);
-    }
-  } else {
-    console.log("==============Not Found:".concat(name, "======================"));
-  } // console.log(`===========================================`)
+        var value = parseMopsPerformanceHtml(html);
 
-}); // export default{parseGetIPHtml};
+        if (!value.income && !value.opIncome && !value.extIncome && !value.EPS && !value.perIncome) {
+          console.log("==============".concat(name, "======================"));
+          notUse++; // console.log(notUse);
+          // fs.unlinkSync(file);
+        } else {
+          if (value.income !== undefined && value.opIncome !== undefined && value.extIncome !== undefined && value.EPS !== undefined && value.perIncome !== undefined) {} else {
+            console.log("==============".concat(name, "======================"));
+            notUse++;
+            console.log(name, value);
+          }
+        }
+      } else {
+        console.log("==============Not Found:".concat(name, "======================"));
+      }
+    });
+  });
+  console.log(notUse);
+};
+
+parseAllMopsStockHtml(); // export default{parseGetIPHtml};

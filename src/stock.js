@@ -13,9 +13,9 @@ let stocks;
 let queueWorks;
 let runIndex;
 
-const queueMax = 5;
+const queueMax = 10;
 const reUseProxyMax = 8;
-const sleepTime = 6000;
+const sleepTime = 5000;
 let maxGetCount = 10;
 let isAllStockID = true;
 
@@ -39,22 +39,24 @@ const insertCatchMonth = ()=>{
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
+    console.log(day);
     if(catchProp.year === year){
-        if(day < 12){            
+        // if(day < 12){            
             --month;
-        }        
+        // }        
     }
     console.log('Month',month);
-    for(let i = 0; i<month; i++){
+    for(let i = 0; i<=month; i++){
         const rightMonth = i + 1;        
-        queueWorks.push({id: rightMonth,inWork: false});
+        queueWorks.push({id: rightMonth, inWork: false});
     }
+    console.log('queueWorks',queueWorks);
 }
 
 const catchGoodInfoStock = (data) => {     
     catchProp = data;       
-    queueWorks = [];
-    if(catchProp.isCompany)
+    queueWorks = [];    
+    if(catchProp.company)
         stocks = getStocksNumberArr(pathStock);
     else
         stocks = getStocksNumberArr(pathStockNoCompany);        
@@ -76,10 +78,11 @@ const catchMopsStock = (data) => {
             maxGetCount = queueWorks.length;
             break;
         case 'performance':
-            if(catchProp.isCompany)
+            console.log(catchProp);
+            if(catchProp.company)
                 stocks = getStocksNumberArr(pathStock);
             else
-                stocks = getStocksNumberArr(pathStockNoCompany);        
+                stocks = getStocksNumberArr(pathStockNoCompany);              
             maxGetCount = stocks.length;
             insertQueue();            
             break;
@@ -125,12 +128,12 @@ const insertQueue = ()=>{
 
 const createCatchThread = (id) => {    
     const data = creatWorkData(id);
-    // console.log(data);
+    // console.log(data.writePath); 
     if(fs.existsSync(data.writePath)){
         console.log('File Exist Escape ',id);
         removeQueue(id);
     }else{
-        // console.log(data);
+        console.log(data);
         const worker1 = new Worker(__dirname +'/httpRequest.js',{
             workerData: data
         });    
@@ -163,7 +166,7 @@ const creatWorkData = (id)=>{
         writePathTemp = `${stockProp.path}/${id}/${catchProp.type}_${id}.html`;
     }
     let proxy = undefined;
-    // if(!catchProp.isMops){
+    if(!(catchProp.isMops && catchProp.type == 'salemonth')){
         if(!proxys){        
             proxys = getAllProxy();
         }          
@@ -172,7 +175,7 @@ const creatWorkData = (id)=>{
                 proxy = getOneProxy();    
             }
         }
-    // }
+    }
 
     // const url = stockProp.url;
                          
@@ -201,13 +204,20 @@ const waitThreadCallback = (runningWorker,id) => {
     });
 
     runningWorker.on('message', (message) => {        
-        if(message.result){
+        if(message.result){            
             console.log('Success', message.id);     
             // console.log(message.writePath);
             
             // console.log(message.body);
-            // console.log(Buffer.from(message.body));     
-            if(message.body.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')){
+            // console.log(Buffer.from(message.body));
+            // if(body.isMops &&)
+            let body = message.body
+            if(Object.prototype.toString.call(message.body) !== '[object String]'){
+                body = new TextDecoder("utf-8").decode(message.body);  
+            }
+            // console.log(body);         
+            if(body.includes('請關閉瀏覽器後重新嘗試')){
+                console.log(body);
                 console.log('Retry Get',id);
                 createCatchThread(id);
             }else{

@@ -43,7 +43,7 @@ const getStockProp = (data)=>{
             break;
     }    
     rtn.path = selectType.path[0];
-    if(!data.isCompany)
+    if(!data.company)
         rtn.path = selectType.path[1];
     return rtn;
 }
@@ -71,8 +71,8 @@ const getMopsStockProp = (data)=>{
     switch(data.type){
         case 'salemonth':            
             selectType = mops_salemonth;
-            rtn.url = selectType.url
-            if(!data.isCompany)
+            rtn.url = selectType.url;
+            if(!data.company)
                 rtn.url = selectType.urlOTC;
             rtn.url = rtn.url.replace('#',data.year).replace('$',data.month);      
             break;
@@ -87,7 +87,7 @@ const getMopsStockProp = (data)=>{
             break;
     }    
     rtn.path = selectType.path[0];
-    if(!data.isCompany){        
+    if(!data.company){        
         rtn.path = selectType.path[1];
     }              
     return rtn;

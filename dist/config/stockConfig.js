@@ -52,7 +52,7 @@ var getStockProp = function getStockProp(data) {
   }
 
   rtn.path = selectType.path[0];
-  if (!data.isCompany) rtn.path = selectType.path[1];
+  if (!data.company) rtn.path = selectType.path[1];
   return rtn;
 };
 
@@ -83,7 +83,7 @@ var getMopsStockProp = function getMopsStockProp(data) {
     case 'salemonth':
       selectType = mops_salemonth;
       rtn.url = selectType.url;
-      if (!data.isCompany) rtn.url = selectType.urlOTC;
+      if (!data.company) rtn.url = selectType.urlOTC;
       rtn.url = rtn.url.replace('#', data.year).replace('$', data.month);
       break;
 
@@ -101,7 +101,7 @@ var getMopsStockProp = function getMopsStockProp(data) {
 
   rtn.path = selectType.path[0];
 
-  if (!data.isCompany) {
+  if (!data.company) {
     rtn.path = selectType.path[1];
   }
 
