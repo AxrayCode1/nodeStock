@@ -13,7 +13,7 @@ let stocks;
 let queueWorks;
 let runIndex;
 
-const queueMax = 10;
+const queueMax = 3;
 const reUseProxyMax = 8;
 const sleepTime = 5000;
 let maxGetCount = 10;
@@ -78,7 +78,7 @@ const catchMopsStock = (data) => {
             maxGetCount = queueWorks.length;
             break;
         case 'performance':
-            console.log(catchProp);
+            // console.log(catchProp);
             if(catchProp.company)
                 stocks = getStocksNumberArr(pathStock);
             else
@@ -96,7 +96,8 @@ const watchQueue = async() =>{
     while(true){
         const filterWorks = queueWorks.filter((work)=>work.inWork === false);
         filterWorks.forEach(filterWork=>{
-            filterWork.inWork = true;                        
+            filterWork.inWork = true;            
+            console.log(filterWork.id);            
             createCatchThread(filterWork.id);
         });
         console.log('Queue Length',queueWorks.length);
@@ -127,13 +128,14 @@ const insertQueue = ()=>{
 
 
 const createCatchThread = (id) => {    
+    // console.log('start catch');
     const data = creatWorkData(id);
     // console.log(data.writePath); 
     if(fs.existsSync(data.writePath)){
         console.log('File Exist Escape ',id);
         removeQueue(id);
     }else{
-        console.log(data);
+        // console.log('catch',id);
         const worker1 = new Worker(__dirname +'/httpRequest.js',{
             workerData: data
         });    
@@ -144,7 +146,7 @@ const createCatchThread = (id) => {
 
 const creatWorkData = (id)=>{
     let stockProp = {};
-    let writePathTemp = '';
+    let writePathTemp = '';    
     if(catchProp.isMops){
         switch(catchProp.type){
             case 'salemonth':
@@ -159,9 +161,11 @@ const creatWorkData = (id)=>{
                 writePathTemp = `${stockProp.path}/${id}/${catchProp.year}_${catchProp.season}.html`;
                 break;                
         }
-    }else{
+    }else{        
+        // console.log(catchProp);
         catchProp.id = id;
         stockProp = stockConfig.getStockProp(catchProp);
+        // console.log(stockProp);
         tools.createDir(`${stockProp.path}/${id}`);  
         writePathTemp = `${stockProp.path}/${id}/${catchProp.type}_${id}.html`;
     }
@@ -203,7 +207,8 @@ const waitThreadCallback = (runningWorker,id) => {
         }
     });
 
-    runningWorker.on('message', (message) => {        
+    runningWorker.on('message', (message) => {     
+        // console.log(message);   
         if(message.result){            
             console.log('Success', message.id);     
             // console.log(message.writePath);

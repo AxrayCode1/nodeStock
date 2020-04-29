@@ -58,7 +58,8 @@ const sendHttpRequest = (data) => {
             }
             parentPort.postMessage(data);
         })
-        .catch((err) => {                         
+        .catch((err) => {    
+            console.log(err);                     
             if(!done){
                 done =true;
                 data.result = false;                            

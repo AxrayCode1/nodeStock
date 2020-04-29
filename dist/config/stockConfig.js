@@ -14,12 +14,12 @@ var salemonth = {
   path: ["".concat(_path["default"].resolve(), "/data/stockSaleMonth"), "".concat(_path["default"].resolve(), "/data/stockSaleMonthNoCompany")]
 };
 var performance = {
-  url: 'https://goodinfo.tw/StockInfo/StockBzPerformance.asp?STOCK_ID=%s&RPT_CAT=M_QUAR"',
+  url: 'https://goodinfo.tw/StockInfo/StockBzPerformance.asp?STOCK_ID=$&RPT_CAT=M_QUAR',
   path: ["".concat(_path["default"].resolve(), "/data/stockPerformance"), "".concat(_path["default"].resolve(), "/data/stockPerformanceNoCompany")]
 };
 var dividend = {
-  url: 'https://goodinfo.tw/StockInfo/StockBzPerformance.asp?STOCK_ID=%s&RPT_CAT=M_QUAR"',
-  path: ["".concat(_path["default"].resolve(), "/data/stockDividend"), "".concat(_path["default"].resolve, "/data/stockDividendNoCompany")]
+  url: 'https://goodinfo.tw/StockInfo/StockDividendPolicy.asp?STOCK_ID=$',
+  path: ["".concat(_path["default"].resolve(), "/data/stockDividend"), "".concat(_path["default"].resolve(), "/data/stockDividendNoCompany")]
 };
 var mops_salemonth = {
   url: 'https://mops.twse.com.tw/nas/t21/sii/t21sc03_#_$_0.html',
@@ -44,15 +44,19 @@ var getStockProp = function getStockProp(data) {
 
     case 'performance':
       selectType = performance;
+      rtn.url = selectType.url.replace('$', data.id);
       break;
 
     case 'dividend':
       selectType = dividend;
+      rtn.url = selectType.url.replace('$', data.id);
       break;
-  }
+  } // console.log(selectType.path[0]);
+
 
   rtn.path = selectType.path[0];
   if (!data.company) rtn.path = selectType.path[1];
+  console.log();
   return rtn;
 };
 

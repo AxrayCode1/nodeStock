@@ -6,13 +6,13 @@ const salemonth={
 }
 
 const performance={
-    url: 'https://goodinfo.tw/StockInfo/StockBzPerformance.asp?STOCK_ID=%s&RPT_CAT=M_QUAR"',
+    url: 'https://goodinfo.tw/StockInfo/StockBzPerformance.asp?STOCK_ID=$&RPT_CAT=M_QUAR',
     path:[`${path.resolve()}/data/stockPerformance`,`${path.resolve()}/data/stockPerformanceNoCompany`]
 }
 
 const dividend={
-    url: 'https://goodinfo.tw/StockInfo/StockBzPerformance.asp?STOCK_ID=%s&RPT_CAT=M_QUAR"',
-    path:[`${path.resolve()}/data/stockDividend`,`${path.resolve}/data/stockDividendNoCompany`]
+    url: 'https://goodinfo.tw/StockInfo/StockDividendPolicy.asp?STOCK_ID=$',
+    path:[`${path.resolve()}/data/stockDividend`,`${path.resolve()}/data/stockDividendNoCompany`]
 }
 
 const mops_salemonth={
@@ -37,14 +37,18 @@ const getStockProp = (data)=>{
             break;
         case 'performance':
             selectType = performance;
+            rtn.url = selectType.url.replace('$',data.id);
             break;
         case 'dividend':
             selectType = dividend;
+            rtn.url = selectType.url.replace('$',data.id);
             break;
     }    
+    // console.log(selectType.path[0]);
     rtn.path = selectType.path[0];
     if(!data.company)
         rtn.path = selectType.path[1];
+    console.log()
     return rtn;
 }
 

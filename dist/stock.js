@@ -41,7 +41,7 @@ var proxys;
 var stocks;
 var queueWorks;
 var runIndex;
-var queueMax = 10;
+var queueMax = 3;
 var reUseProxyMax = 8;
 var sleepTime = 5000;
 var maxGetCount = 10;
@@ -70,9 +70,8 @@ var insertCatchMonth = function insertCatchMonth() {
   console.log(day);
 
   if (catchProp.year === year) {
-    if (day < 12) {
-      (0, _readOnlyError2["default"])("month"), --month;
-    }
+    // if(day < 12){            
+    (0, _readOnlyError2["default"])("month"), --month; // }        
   }
 
   console.log('Month', month);
@@ -112,7 +111,7 @@ var catchMopsStock = function catchMopsStock(data) {
       break;
 
     case 'performance':
-      console.log(catchProp);
+      // console.log(catchProp);
       if (catchProp.company) stocks = getStocksNumberArr(pathStock);else stocks = getStocksNumberArr(pathStockNoCompany);
       maxGetCount = stocks.length;
       insertQueue();
@@ -139,6 +138,7 @@ var watchQueue = /*#__PURE__*/function () {
             });
             filterWorks.forEach(function (filterWork) {
               filterWork.inWork = true;
+              console.log(filterWork.id);
               createCatchThread(filterWork.id);
             });
             console.log('Queue Length', queueWorks.length);
@@ -199,13 +199,14 @@ var insertQueue = function insertQueue() {
 };
 
 var createCatchThread = function createCatchThread(id) {
+  // console.log('start catch');
   var data = creatWorkData(id); // console.log(data.writePath); 
 
   if (_fs["default"].existsSync(data.writePath)) {
     console.log('File Exist Escape ', id);
     removeQueue(id);
   } else {
-    console.log(data);
+    // console.log('catch',id);
     var worker1 = new Worker(__dirname + '/httpRequest.js', {
       workerData: data
     });
@@ -236,8 +237,9 @@ var creatWorkData = function creatWorkData(id) {
         break;
     }
   } else {
+    // console.log(catchProp);
     catchProp.id = id;
-    stockProp = _stockConfig["default"].getStockProp(catchProp);
+    stockProp = _stockConfig["default"].getStockProp(catchProp); // console.log(stockProp);
 
     _tools["default"].createDir("".concat(stockProp.path, "/").concat(id));
 
@@ -282,6 +284,7 @@ var waitThreadCallback = function waitThreadCallback(runningWorker, id) {
     }
   });
   runningWorker.on('message', function (message) {
+    // console.log(message);   
     if (message.result) {
       console.log('Success', message.id); // console.log(message.writePath);
       // console.log(message.body);
