@@ -23,7 +23,7 @@ const parseGoodInfoPerformanceHtml = (rawHtml) =>{
         const className = htmlparser2.DomUtils.getAttributeValue(finddom,'class');              
         // console.log('ClassName：',className);          
         if(className == 'solid_1_padding_4_0_tbl'){
-            console.log("Find Dom:",className);                         
+            // console.log("Find Dom:",className);                         
             htmlparser2.DomUtils.getElementsByTagName('tr',finddom).forEach(trdom => {
                 tdIndex = 0;
                 breakFlag = false;
@@ -75,55 +75,24 @@ const getDirectories = source =>
     })
     .map(dirent => dirent.name)
 
-const parseAllGoodInfoStockHtml = () => {
+const parseAllGoodInfoStockHtml = (path,namefile) => {
     // const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformanceNoCompany';
-    const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformance';
+    // const path = '/opt/lampp/node/nodeProject/stock/data/mopsPerformance';
     // const name = '8906';    //For Test
     let notUse = 0;
     getDirectories(path).forEach(name => {        
-        // const files = ['107_01.html','107_02.html']
-        const files = ['108_02.html'];
-        files.forEach(f=>{
-            const file = `${path}/${name}/${f}`;        
-            if(fs.existsSync(file)){
-                const html = fs.readFileSync(file).toString();
-                if(html.includes('公開發行公司不繼續公開發行')){
-                    // console.log(`==============${name} is not available======================`);
-                    notUse++;
-                    return;
-                }
-                if(html.includes('因為安全性考量，您所執行的頁面無法呈現，請關閉瀏覽器後重新嘗試')){
-                    console.log(`==============${name} Not Catch======================`);
-                    fs.unlinkSync(file);
-                    return;
-                }
-                const value = parseMopsPerformanceHtml(html);    
-                if(!value.income && !value.opIncome && !value.extIncome && !value.EPS && !value.perIncome){
-                    console.log(`==============${name}======================`);
-                    notUse++;        
-                    // console.log(notUse);
-                    // fs.unlinkSync(file);
-                }else{
-                    if(value.income !== undefined && value.opIncome !== undefined && value.extIncome !== undefined && value.EPS !== undefined && value.perIncome !== undefined){
-
-                    }else{
-                        console.log(`==============${name}======================`);
-                        notUse++;        
-                        console.log(name,value);
-                    }                    
-                }
-            }
-            else{
-                console.log(`==============Not Found:${name}======================`);
-            }
-        })        
+        // const files = ['107_01.html','107_02.html']   
+        console.log('=====',name,'=====');    
+        const file = `${path}/${name}/${namefile}${name}.html`;        
+        if(fs.existsSync(file)){
+            const html = fs.readFileSync(file).toString();
+            parseGoodInfoPerformanceHtml(html);
+        }     
     });
     console.log(notUse);
 }
 
-html = fs.readFileSync('/opt/lampp/node/nodeProject/stock/data/stockPerformance/1101/performance_1101.html').toString();
-parseGoodInfoPerformanceHtml(html);
+// html = fs.readFileSync('/opt/lampp/node/nodeProject/stock/data/stockPerformance/1101/performance_1101.html').toString();
+// parseGoodInfoPerformanceHtml(html);
 
-// parseAllMopsStockHtml();
-
-// export default{parseGetIPHtml};
+parseAllGoodInfoStockHtml('/opt/lampp/node/nodeProject/stock/data/stockPerformance','performance_');
